@@ -6,6 +6,7 @@
 #include <QTimer>
 #include <QStringList>
 #include <QChar>
+#include <QClipboard>
 
 Widget::Widget(QWidget *parent): QWidget(parent), ui(new Ui::Widget)
 {
@@ -13,11 +14,10 @@ Widget::Widget(QWidget *parent): QWidget(parent), ui(new Ui::Widget)
     timer = new QTimer(this);
     connect(timer,SIGNAL(timeout()),this,SLOT(loop()));
     timer->start(1000);
-
 }
 
 QString Widget::loop(){
-    ui->horizontalSlider->setMaximum(30);
+    ui->horizontalSlider->setMaximum(64);
     ui->progressBar->setValue(ui->horizontalSlider->value());
 
     QString a("");
@@ -77,7 +77,12 @@ QString Widget::generate(){
     return password;
 }
 
-void Widget::on_pushButton_clicked()
-{
-    ui->lineEdit->setText(generate());
+void Widget::on_Generar_clicked(){
+    ui->label->setText(generate());
+}
+
+void Widget::on_Copiar_clicked(){
+    QClipboard *clipboard = QApplication::clipboard();
+    const QString password = ui->label->text();
+    clipboard->setText(password);
 }

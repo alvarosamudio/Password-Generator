@@ -7,8 +7,8 @@ MainWindow::MainWindow(QWidget *parent)
     : DMainWindow(parent)
 {
     w = new Widget;
-    setMinimumSize(470,360);
-    setMaximumSize(470,360);
+    setMinimumSize(600,300);
+    setMaximumSize(600,300);
     setCentralWidget(w);
 
 }
