@@ -21,3 +21,7 @@ PKGCONFIG += dtkwidget
 
 FORMS += \
     widget.ui
+
+DISTFILES += \
+    image/deepines.svg \
+    image/passwordgenerator.svg

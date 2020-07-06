@@ -17,12 +17,12 @@ public:
 
 private slots:
 
-    void on_pushButton_clicked();
     QString loop();
+    void on_Generar_clicked();
+    void on_Copiar_clicked();
 
 private:
     Ui::Widget *ui;
-
     QString generate();
     QTimer *timer;
     QString a;
