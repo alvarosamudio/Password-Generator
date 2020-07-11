@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>602</width>
-    <height>265</height>
+    <width>600</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,10 +17,13 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>60</y>
+     <y>90</y>
      <width>551</width>
-     <height>41</height>
+     <height>31</height>
     </rect>
+   </property>
+   <property name="toolTip">
+    <string/>
    </property>
    <property name="maximum">
     <number>64</number>
@@ -32,65 +35,13 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBox">
-   <property name="geometry">
-    <rect>
-     <x>160</x>
-     <y>120</y>
-     <width>101</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Minúsculas</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBox_2">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>120</y>
-     <width>101</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Mayúsculas</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBox_3">
-   <property name="geometry">
-    <rect>
-     <x>480</x>
-     <y>120</y>
-     <width>141</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Símbolos</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBox_4">
-   <property name="geometry">
-    <rect>
-     <x>330</x>
-     <y>120</y>
-     <width>101</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Números</string>
-   </property>
-  </widget>
   <widget class="QProgressBar" name="progressBar">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>240</y>
-     <width>601</width>
-     <height>21</height>
+     <x>20</x>
+     <y>91</y>
+     <width>551</width>
+     <height>20</height>
     </rect>
    </property>
    <property name="maximum">
@@ -98,6 +49,9 @@
    </property>
    <property name="value">
     <number>0</number>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
    <property name="textVisible">
     <bool>false</bool>
@@ -109,8 +63,8 @@
   <widget class="QPushButton" name="Copiar">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>190</y>
+     <x>310</x>
+     <y>200</y>
      <width>121</width>
      <height>31</height>
     </rect>
@@ -130,8 +84,8 @@
   <widget class="QPushButton" name="Generar">
    <property name="geometry">
     <rect>
-     <x>150</x>
-     <y>190</y>
+     <x>160</x>
+     <y>200</y>
      <width>121</width>
      <height>31</height>
     </rect>
@@ -152,7 +106,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>10</y>
+     <y>30</y>
      <width>551</width>
      <height>20</height>
     </rect>
@@ -169,7 +123,58 @@
    <property name="scaledContents">
     <bool>true</bool>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
   </widget>
+  <widget class="QWidget" name="">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>130</y>
+     <width>551</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="QCheckBox" name="checkBox_2">
+      <property name="text">
+       <string>Mayúsculas</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox">
+      <property name="text">
+       <string>Minúsculas</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox_4">
+      <property name="text">
+       <string>Números</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="checkBox_3">
+      <property name="text">
+       <string>Símbolos</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <zorder>progressBar</zorder>
+  <zorder>horizontalSlider</zorder>
+  <zorder>checkBox_2</zorder>
+  <zorder>checkBox_3</zorder>
+  <zorder>checkBox_4</zorder>
+  <zorder>Copiar</zorder>
+  <zorder>Generar</zorder>
+  <zorder>label</zorder>
  </widget>
  <resources/>
  <connections/>
