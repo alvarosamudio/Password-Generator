@@ -20,8 +20,7 @@ int main(int argc, char *argv[])
      //descritcion
      dialog.setProductName("<span>Generate random passwords by choosing the size and complexity</span>");
      //icons
-     dialog.setProductIcon(QIcon(":/imege/passwordgenerator.svg"));
-     dialog.setCompanyLogo(QPixmap(":/image/deepines.svg"));
+     dialog.setCompanyLogo(QPixmap("://Logo-Racoon.png"));
      //about
      dialog.setDescription(
          "<span style=' font-size:8pt; font-weight:600;'>Deepin en Español </span>"

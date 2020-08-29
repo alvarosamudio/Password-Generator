@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Logo-Racoon.png</file>
+        <file>passwordgenerator.svg</file>
+    </qresource>
+</RCC>
