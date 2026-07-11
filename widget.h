@@ -16,19 +16,14 @@ public:
     Widget(QWidget *parent = nullptr);
 
 private slots:
-
-    QString loop();
     void on_Generar_clicked();
     void on_Copiar_clicked();
+    void on_horizontalSlider_valueChanged(int value);
 
 private:
     Ui::Widget *ui;
     QString generate();
-    QTimer *timer;
-    QString a;
-    QString b;
-    QString c;
-    QString d;
+    QString buildCharacterSet();
 
 };
 #endif // WIDGET_H
