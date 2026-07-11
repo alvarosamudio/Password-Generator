@@ -1,0 +1,8 @@
+password-generator (0.1-1) unstable; urgency=medium
+
+  * Initial release.
+  * Generate random passwords by choosing the size and complexity.
+  * Support for lowercase, uppercase, numbers and symbols.
+  * Deepin Tool Kit (DTK5) integration with about dialog.
+
+ -- alvarosamudio <alvarosamudio@protonmail.com>  Sat, 11 Jul 2026 09:00:00 -0500

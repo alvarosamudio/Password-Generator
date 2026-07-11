@@ -1,0 +1,21 @@
+Source: password-generator
+Section: utils
+Priority: optional
+Maintainer: alvarosamudio <alvarosamudio@protonmail.com>
+Build-Depends: qtbase5-dev, qt5-qmake, pkg-config, libdtkwidget-dev (>= 5.6.0~)
+Standards-Version: 4.7.0
+Homepage: https://deepinenespanol.org
+Rules-Requires-Root: no
+
+Package: password-generator
+Architecture: amd64
+Depends: ${shlibs:Depends}
+Description: Password Generator - random password creator
+ Password Generator allows you to generate random passwords by
+ choosing the size and complexity of the password.
+ .
+ Features:
+  * Selectable character types: lowercase, uppercase, numbers and symbols
+  * Adjustable password length (0-64 characters)
+  * Copy to clipboard functionality
+  * Deepin desktop integration with native look and feel

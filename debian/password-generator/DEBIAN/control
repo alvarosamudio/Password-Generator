@@ -1,0 +1,18 @@
+Package: password-generator
+Version: 0.1-1
+Architecture: amd64
+Maintainer: alvarosamudio <alvarosamudio@protonmail.com>
+Installed-Size: 119
+Depends: libc6 (>= 2.34), libdtkcore5 (>= 6.7.44), libdtkwidget5 (>= 6.7.44), libgcc-s1 (>= 3.0), libqt5core5a (>= 5.15.1), libqt5gui5 (>= 5.0.2) | libqt5gui5-gles (>= 5.0.2), libqt5widgets5 (>= 5.0.2), libstdc++6 (>= 5)
+Section: utils
+Priority: optional
+Homepage: https://deepinenespanol.org
+Description: Password Generator - random password creator
+ Password Generator allows you to generate random passwords by
+ choosing the size and complexity of the password.
+ .
+ Features:
+  * Selectable character types: lowercase, uppercase, numbers and symbols
+  * Adjustable password length (0-64 characters)
+  * Copy to clipboard functionality
+  * Deepin desktop integration with native look and feel
