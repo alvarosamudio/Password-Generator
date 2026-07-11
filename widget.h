@@ -20,7 +20,7 @@ private slots:
     void on_Copiar_clicked();
     void on_horizontalSlider_valueChanged(int value);
 
-private:
+public:
     Ui::Widget *ui;
     QString generate();
     QString buildCharacterSet();

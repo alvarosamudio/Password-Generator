@@ -1,27 +1,15 @@
-QT       += core gui svg
+QT       += core gui svg testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TEMPLATE = app
-
 DEFINES += QT_DEPRECATED_WARNINGS
-
-
-SOURCES += \
-    main.cpp \
-    mainwindow.cpp \
-    widget.cpp
-
-HEADERS += \
-    mainwindow.h \
-    widget.h
 
 CONFIG += link_pkgconfig
 PKGCONFIG += dtkwidget
 
-FORMS += \
-    widget.ui
+TEMPLATE = subdirs
+SUBDIRS = app testlib
 
-
-RESOURCES += \
-    imgs.qrc
+app.file = app.pro
+testlib.file = testlib.pro
+testlib.depends = app
