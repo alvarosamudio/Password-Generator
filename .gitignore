@@ -30,3 +30,20 @@
 *.exe
 *.out
 *.app
+
+# Qt build artifacts
+Makefile
+Makefile.*
+*.pro.user
+moc_*.cpp
+moc_predefs.h
+qrc_*.cpp
+ui_*.h
+.qmake.stash
+
+# Qt test artifacts
+test_widget
+test_widget.moc
+
+# Application binary
+passwordgenerator
