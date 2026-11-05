@@ -1,10 +1,9 @@
-QT       += core gui svg
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui widgets
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += link_pkgconfig
-PKGCONFIG += dtkwidget
+PKGCONFIG += dtk6widget
 
 TEMPLATE = app
 TARGET = passwordgenerator
@@ -23,3 +22,11 @@ FORMS += \
 
 RESOURCES += \
     imgs.qrc
+
+isEmpty(PREFIX): PREFIX = /usr
+target.path = $$PREFIX/bin
+desktop.files = passwordgenerator.desktop
+desktop.path = $$PREFIX/share/applications
+icon.files = passwordgenerator.svg
+icon.path = $$PREFIX/share/icons/hicolor/scalable/apps
+INSTALLS += target desktop icon

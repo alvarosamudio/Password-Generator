@@ -25,5 +25,8 @@ public:
     QString generate();
     QString buildCharacterSet();
 
+private:
+    QString m_password;  // ultima contrasena generada (lo que se copia)
+
 };
 #endif // WIDGET_H

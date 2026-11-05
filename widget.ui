@@ -214,22 +214,4 @@
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>horizontalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>Widget</receiver>
-   <slot>on_horizontalSlider_valueChanged(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>295</x>
-     <y>105</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>299</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
 </ui>

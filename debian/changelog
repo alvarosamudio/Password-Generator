@@ -1,3 +1,17 @@
+password-generator (0.2.0) unstable; urgency=medium
+
+  * Migrada a Qt6 y DTK6 (antes Qt5/DTK5), como el resto de apps.
+  * Las contrasenas salen del generador criptografico del sistema
+    (QRandomGenerator::system) en lugar de un PRNG sembrado.
+  * "Copiar" ya no copia el aviso cuando no hay contrasena generada.
+  * Empaquetado debhelper estandar (sin rutas locales), multi-arquitectura,
+    con acceso directo en el menu y pruebas ejecutadas al compilar.
+  * Enlace a la web corregido y version en el dialogo "Acerca de".
+  * CI y release automatica con .deb (amd64, arm64, riscv64, loong64) y
+    .uab de linyaps (amd64, arm64).
+
+ -- Alvaro Samudio <alvarosamudio@protonmail.com>  Wed, 04 Nov 2026 22:10:00 +0000
+
 password-generator (0.1-1) unstable; urgency=medium
 
   * Initial release.

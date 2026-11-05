@@ -1,39 +1,15 @@
 #!/usr/bin/make -f
 
-export GCC_EXEC_PREFIX=/usr/lib/gcc/
-export QT_SELECT=5
-export PKG_CONFIG_PATH=$(HOME)/.local/dtk5/lib/pkgconfig
-export QT_QMAKE=/usr/lib/x86_64-linux-gnu/qt5/bin/qmake
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+export QT_SELECT = 6
 
-DEB_HOST_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+%:
+	dh $@ --buildsystem=qmake6
 
-PKG = password-generator
-DESTDIR = debian/$(PKG)
+# passwordgenerator.pro es un "subdirs" que compila la app y las pruebas
+override_dh_auto_configure:
+	dh_auto_configure -- $(CURDIR)/passwordgenerator.pro PREFIX=/usr
 
-build:
-	qmake app.pro PREFIX=/usr
-	$(MAKE) -j$(shell nproc)
-
-clean:
-	test -f Makefile && $(MAKE) distclean || true
-	rm -rf debian/$(PKG)
-	rm -rf debian/.debhelper
-	rm -f debian/files debian/substvars
-
-binary-arch: build
-	install -D -m 755 passwordgenerator $(DESTDIR)/usr/bin/passwordgenerator
-	install -D -m 644 passwordgenerator.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/passwordgenerator.svg
-	install -D -m 644 LICENSE $(DESTDIR)/usr/share/doc/$(PKG)/copyright
-	install -D -m 644 README.md $(DESTDIR)/usr/share/doc/$(PKG)/README.md
-	mkdir -p $(DESTDIR)/DEBIAN
-	touch debian/substvars
-	dpkg-shlibdeps $(DESTDIR)/usr/bin/passwordgenerator -edebian/substvars
-	dpkg-gencontrol -p$(PKG) -P$(DESTDIR)
-	dpkg-deb --build $(DESTDIR) ..
-
-binary-indep:
-
-binary: binary-arch binary-indep
-
-.PHONY: build clean binary binary-arch binary-indep
+# Las pruebas crean widgets: sin pantalla, con la plataforma offscreen
+override_dh_auto_test:
+	QT_QPA_PLATFORM=offscreen dh_auto_test

@@ -47,3 +47,17 @@ test_widget.moc
 
 # Application binary
 passwordgenerator
+
+# debhelper / paquetes / linyaps
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.substvars
+debian/substvars
+debian/password-generator/
+debs/
+linglong/
+*.uab
+*.layer
+*.deb
+target_wrapper.sh

@@ -6,13 +6,13 @@
 DWIDGET_USE_NAMESPACE
 int main(int argc, char *argv[])
 {
-    DApplication::loadDXcbPlugin();
     DApplication a(argc, argv);
     DAboutDialog dialog;
 
-     a.setAttribute(Qt::AA_UseHighDpiPixmaps);
      a.setProductName("Password Generator");
-     a.setApplicationName("Password Generator");
+     a.setOrganizationName("deepinenespanol");
+     a.setApplicationName("passwordgenerator");
+     a.setApplicationVersion("0.2.0");
      a.setAboutDialog(&dialog);
 
      //Title
@@ -24,11 +24,11 @@ int main(int argc, char *argv[])
      //about
      dialog.setDescription(
          "<span style=' font-size:8pt; font-weight:600;'>Deepin en Español </span>"
-         "<a href='https://deepinenespañol.org'>https://deepinenespañol.org</a><br/>"
+         "<a href='https://deepinenespanol.org'>https://deepinenespanol.org</a><br/>"
          "<span style=' font-size:8pt; font-weight:600;'>Deepin Latin Code - developers</span>");
-     dialog.setVersion(DApplication::buildVersion("Version 0.1"));
-     dialog.setWebsiteName("deepinenespañol.org");
-     dialog.setWebsiteLink("https://deepinenespañol.org");
+     dialog.setVersion(a.applicationVersion());
+     dialog.setWebsiteName("deepinenespanol.org");
+     dialog.setWebsiteLink("https://deepinenespanol.org");
 
 
     MainWindow w;

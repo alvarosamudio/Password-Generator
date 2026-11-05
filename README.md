@@ -1,6 +1,6 @@
 # Password Generator
 
-A random password generator for Deepin Linux built with Qt5 and DTK (Deepin Tool Kit).
+A random password generator for Deepin Linux built with Qt6 and DTK6 (Deepin Tool Kit).
 
 ## Features
 
@@ -18,30 +18,30 @@ A random password generator for Deepin Linux built with Qt5 and DTK (Deepin Tool
 
 ## Requirements
 
-- Deepin Linux or any Debian-based system with DTK5
-- Qt 5.15+
-- DTK5 (Deepin Tool Kit): `libdtkwidget5`, `libdtkcore5`
+- Deepin 25 or any Debian-based system with DTK6
+- Qt 6.4+
+- DTK6 (Deepin Tool Kit): `libdtk6widget`, `libdtk6core`
 
 ## Build from source
 
 ### Prerequisites
 
 ```bash
-sudo apt install qtbase5-dev qt5-qmake libdtkwidget-dev pkg-config build-essential
+sudo apt install qt6-base-dev qmake6 libdtk6widget-dev pkg-config build-essential
 ```
 
 ### Compile
 
 ```bash
 export QT_SELECT=5
-qmake app.pro PREFIX=/usr
+qmake6 app.pro PREFIX=/usr
 make -j$(nproc)
 ```
 
 ### Run tests
 
 ```bash
-qmake testlib.pro
+qmake6 testlib.pro
 make -j$(nproc)
 export QT_QPA_PLATFORM=offscreen
 ./test_widget

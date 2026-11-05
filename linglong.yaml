@@ -1,0 +1,28 @@
+version: "1"
+
+package:
+  id: org.deepinenespanol.passwordgenerator
+  name: "Password Generator"
+  version: 0.2.0.0
+  kind: app
+  description: |
+    Generate random passwords by choosing the size and complexity.
+
+command:
+  - /opt/apps/org.deepinenespanol.passwordgenerator/files/bin/passwordgenerator
+
+base: org.deepin.base/25.2.2
+runtime: org.deepin.runtime.dtk/25.2.2
+
+# Se empaqueta el .deb ya compilado (el CI lo deja en debs/).
+# Se lee de /project/debs/ porque ll-builder vacia linglong/sources.
+build: |
+  dpkg-deb -X /project/debs/password-generator_*.deb $PREFIX/
+  mv $PREFIX/usr/bin $PREFIX/bin
+  mv $PREFIX/usr/share $PREFIX/share
+  rm -rf $PREFIX/usr
+  mv $PREFIX/share/applications/passwordgenerator.desktop $PREFIX/share/applications/org.deepinenespanol.passwordgenerator.desktop
+  sed -i 's#^Exec=.*#Exec=/opt/apps/org.deepinenespanol.passwordgenerator/files/bin/passwordgenerator#' \
+      $PREFIX/share/applications/org.deepinenespanol.passwordgenerator.desktop
+
+sources: []

@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <QChar>
 #include <QClipboard>
+#include <QApplication>
 
 Widget::Widget(QWidget *parent): QWidget(parent), ui(new Ui::Widget)
 {
@@ -43,21 +44,21 @@ QString Widget::generate()
     if (possibleCharacters.isEmpty() || taille_pass == 0)
         return QString();
 
-    std::uniform_int_distribution<int> distribution(0, possibleCharacters.size() - 1);
+    // QRandomGenerator::system() usa el generador criptografico del sistema
+    // operativo (getrandom); global() es un PRNG sembrado, no apto para
+    // contrasenas. bounded() reparte de forma uniforme, sin sesgo de modulo.
+    QRandomGenerator *rng = QRandomGenerator::system();
     QString password;
-
-    for (int i = 0; i < taille_pass; i++) {
-        int value = distribution(*QRandomGenerator::global());
-        int index = value % possibleCharacters.length();
-        QChar nextChar = possibleCharacters.at(index);
-        password.append(nextChar);
-    }
+    password.reserve(taille_pass);
+    for (int i = 0; i < taille_pass; i++)
+        password.append(possibleCharacters.at(int(rng->bounded(quint32(possibleCharacters.size())))));
     return password;
 }
 
 void Widget::on_Generar_clicked()
 {
     QString password = generate();
+    m_password = password;
     if (password.isEmpty())
         ui->label->setText("Selecciona al menos un tipo de carácter");
     else
@@ -67,8 +68,9 @@ void Widget::on_Generar_clicked()
 void Widget::on_Copiar_clicked()
 {
     QClipboard *clipboard = QApplication::clipboard();
-    const QString password = ui->label->text();
-    clipboard->setText(password);
+    // Solo se copia una contrasena generada, nunca el texto de aviso
+    if (!m_password.isEmpty())
+        clipboard->setText(m_password);
 }
 
 void Widget::on_horizontalSlider_valueChanged(int value)

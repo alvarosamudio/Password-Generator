@@ -1,11 +1,10 @@
-QT       += core gui svg testlib
+QT       += core gui widgets testlib
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 DEFINES += QT_DEPRECATED_WARNINGS
 
 CONFIG += link_pkgconfig
-PKGCONFIG += dtkwidget
+PKGCONFIG += dtk6widget
 
 TEMPLATE = subdirs
 SUBDIRS = app testlib
