@@ -4,36 +4,34 @@
 #include <DAboutDialog>
 
 DWIDGET_USE_NAMESPACE
+
 int main(int argc, char *argv[])
 {
     DApplication a(argc, argv);
+    a.setOrganizationName("deepinenespanol");
+    a.setApplicationName("passwordgenerator");
+    a.setApplicationVersion("0.2.0");
+    a.setProductName(QObject::tr("Generador de contraseñas"));
+    a.setApplicationDisplayName(QObject::tr("Generador de contraseñas"));
+    a.setProductIcon(QIcon(":/passwordgenerator.svg"));
+    a.setWindowIcon(QIcon(":/passwordgenerator.svg"));
+
     DAboutDialog dialog;
-
-     a.setProductName("Password Generator");
-     a.setOrganizationName("deepinenespanol");
-     a.setApplicationName("passwordgenerator");
-     a.setApplicationVersion("0.2.0");
-     a.setAboutDialog(&dialog);
-
-     //Title
-     dialog.setWindowTitle("Password Generator");
-     //descritcion
-     dialog.setProductName("<span>Generate random passwords by choosing the size and complexity</span>");
-     //icons
-     dialog.setCompanyLogo(QPixmap("://Logo-Racoon.png"));
-     //about
-     dialog.setDescription(
-         "<span style=' font-size:8pt; font-weight:600;'>Deepin en Español </span>"
-         "<a href='https://deepinenespanol.org'>https://deepinenespanol.org</a><br/>"
-         "<span style=' font-size:8pt; font-weight:600;'>Deepin Latin Code - developers</span>");
-     dialog.setVersion(a.applicationVersion());
-     dialog.setWebsiteName("deepinenespanol.org");
-     dialog.setWebsiteLink("https://deepinenespanol.org");
-
+    dialog.setWindowTitle(a.productName());
+    dialog.setProductName(a.productName());
+    dialog.setProductIcon(a.productIcon());
+    dialog.setCompanyLogo(QPixmap(":/Logo-Racoon.png"));
+    dialog.setVersion(a.applicationVersion());
+    dialog.setDescription(
+        QObject::tr("Genera contraseñas aleatorias y seguras eligiendo su longitud y "
+                    "complejidad.") +
+        "<br/><br/><b>Deepin en Español</b> · Deepin Latin Code - developers");
+    dialog.setWebsiteName("deepinenespanol.org");
+    dialog.setWebsiteLink("https://deepinenespanol.org");
+    a.setAboutDialog(&dialog);
 
     MainWindow w;
     w.show();
-
     Dtk::Widget::moveToCenter(&w);
     return a.exec();
 }

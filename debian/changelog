@@ -3,7 +3,18 @@ password-generator (0.2.0) unstable; urgency=medium
   * Migrada a Qt6 y DTK6 (antes Qt5/DTK5), como el resto de apps.
   * Las contrasenas salen del generador criptografico del sistema
     (QRandomGenerator::system) en lugar de un PRNG sembrado.
-  * "Copiar" ya no copia el aviso cuando no hay contrasena generada.
+  * Ventana renovada: genera una contrasena al abrir y cada vez que se
+    cambia una opcion; texto monoespaciado y seleccionable; longitud con
+    deslizador y casilla numerica (4-128).
+  * Medidor de fuerza (5 niveles) con la entropia en bits, en lugar de una
+    barra que solo repetia la longitud.
+  * Nuevas opciones: incluir n/N (ahora opcional), evitar caracteres
+    confusos (I l 1 O 0 o) y al menos un caracter de cada tipo, sin sesgar
+    el reparto. Simbolos solo ASCII que aceptan las webs.
+  * Copiar (Ctrl+C) avisa y borra la contrasena del portapapeles a los 30 s
+    o al cerrar, si sigue ahi. F5 / Ctrl+R generan otra.
+  * Recuerda las opciones elegidas (nunca la contrasena).
+  * Icono nuevo y dialogo "Acerca de" corregido.
   * Empaquetado debhelper estandar (sin rutas locales), multi-arquitectura,
     con acceso directo en el menu y pruebas ejecutadas al compilar.
   * Enlace a la web corregido y version en el dialogo "Acerca de".

@@ -4,13 +4,17 @@ A random password generator for Deepin Linux built with Qt6 and DTK6 (Deepin Too
 
 ## Features
 
-- Generate random passwords with adjustable length (0-64 characters)
-- Selectable character types: lowercase, uppercase, numbers and symbols
-- Spanish-specific characters included (`ñ`, `Ñ`)
-- Copy to clipboard with one click
-- Native Deepin desktop look and feel
-- Resizable window with flexible layout
-- Real-time length indicator
+- Generates a password as soon as it opens and every time an option changes
+- Passwords come from the operating system's cryptographic random generator
+- Length from 4 to 128 characters (slider or number box)
+- Character types: lowercase, uppercase, numbers and symbols (web-safe ASCII)
+- Optional `ñ`/`Ñ`, option to avoid look-alike characters (`I l 1 O 0 o`) and
+  to require at least one character of each selected type
+- Strength meter with the estimated entropy in bits
+- Copy with one click or Ctrl+C; the password is wiped from the clipboard
+  after 30 seconds (or when the app closes) if it is still there
+- Remembers your options (never the password)
+- Native Deepin (DTK6) look and feel
 
 ## Screenshot
 

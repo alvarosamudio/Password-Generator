@@ -1,6 +1,7 @@
 QT       += core gui widgets
 
 DEFINES += QT_DEPRECATED_WARNINGS
+CONFIG += c++17
 
 CONFIG += link_pkgconfig
 PKGCONFIG += dtk6widget
@@ -11,14 +12,14 @@ TARGET = passwordgenerator
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    widget.cpp
+    widget.cpp \
+    generador.cpp
 
 HEADERS += \
     mainwindow.h \
-    widget.h
+    widget.h \
+    generador.h
 
-FORMS += \
-    widget.ui
 
 RESOURCES += \
     imgs.qrc
