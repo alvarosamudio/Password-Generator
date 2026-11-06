@@ -25,6 +25,12 @@ struct OpcionesFrase {
     bool numero = true;      // un digito al final de una palabra al azar
 };
 
+// Resultado de analizar una contrasena escrita por el usuario
+struct Analisis {
+    double bits = 0;      // entropia estimada teniendo en cuenta los patrones
+    QStringList avisos;   // problemas encontrados, ya traducidos
+};
+
 // Logica pura del generador (sin interfaz), para poder probarla.
 namespace Generador {
 
@@ -56,6 +62,11 @@ double entropiaFrase(const OpcionesFrase &o);
 // Tiempo medio para adivinarla a 10 000 millones de intentos por segundo
 // (un equipo potente contra un hash rapido), en palabras: "3 siglos"
 QString tiempoDescifrado(double bits);
+
+// Estima la fuerza real de una contrasena existente: detecta contrasenas muy
+// comunes, palabras del diccionario (tambien con sustituciones tipo p4ssw0rd),
+// repeticiones, secuencias, filas del teclado y anos. Todo en local.
+Analisis analizar(const QString &clave);
 
 } // namespace Generador
 

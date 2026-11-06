@@ -19,6 +19,12 @@ password-generator (0.2.0) unstable; urgency=medium
     mayuscula y numero opcionales.
   * Numeros y simbolos en color para distinguirlos de las letras.
   * Estimacion del tiempo que tardaria un equipo potente en adivinarla.
+  * Modo "Comprobar": analiza una contrasena existente en local y avisa de
+    contrasenas comunes, palabras del diccionario (tambien p4ssw0rd),
+    anos, filas del teclado, secuencias y repeticiones.
+  * Boton para mostrar u ocultar la contrasena generada.
+  * Traducida al ingles, portugues, frances, italiano y chino.
+  * Codigo organizado en src/, tests/, data/ y translations/.
   * Recuerda las opciones elegidas y el modo (nunca la contrasena).
   * Icono nuevo y dialogo "Acerca de" corregido.
   * Empaquetado debhelper estandar (sin rutas locales), multi-arquitectura,

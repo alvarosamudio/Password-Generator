@@ -1,14 +1,4 @@
-QT       += core gui widgets testlib
-
-
-DEFINES += QT_DEPRECATED_WARNINGS
-
-CONFIG += link_pkgconfig
-PKGCONFIG += dtk6widget
-
+# Generador de contrasenas: la aplicacion (src/) y sus pruebas (tests/)
 TEMPLATE = subdirs
-SUBDIRS = app testlib
-
-app.file = app.pro
-testlib.file = testlib.pro
-testlib.depends = app
+SUBDIRS = src tests
+tests.depends = src

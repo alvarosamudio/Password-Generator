@@ -2,6 +2,8 @@
 #include <DApplication>
 #include <DWidgetUtil>
 #include <DAboutDialog>
+#include <QLocale>
+#include <QTranslator>
 
 DWIDGET_USE_NAMESPACE
 
@@ -11,6 +13,14 @@ int main(int argc, char *argv[])
     a.setOrganizationName("deepinenespanol");
     a.setApplicationName("passwordgenerator");
     a.setApplicationVersion("0.2.0");
+
+    // Los textos fuente estan en espanol; para otros idiomas se carga la
+    // traduccion embebida (:/i18n). Antes de crear cualquier texto.
+    a.loadTranslator();
+    QTranslator traductor;
+    if (traductor.load(QLocale(), QStringLiteral("passwordgenerator"), QStringLiteral("_"),
+                       QStringLiteral(":/i18n")))
+        a.installTranslator(&traductor);
     a.setProductName(QObject::tr("Generador de contraseñas"));
     a.setApplicationDisplayName(QObject::tr("Generador de contraseñas"));
     a.setProductIcon(QIcon(":/passwordgenerator.svg"));

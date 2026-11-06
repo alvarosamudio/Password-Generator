@@ -11,6 +11,9 @@
 #include <QStackedWidget>
 #include <QSet>
 #include <cmath>
+#include <QLabel>
+#include <QPushButton>
+#include <DPasswordEdit>
 
 #include "generador.h"
 #include "widget.h"
@@ -187,7 +190,92 @@ private slots:
         QCOMPARE(Generador::tiempoDescifrado(5000), QStringLiteral("más que la edad del universo"));
     }
 
+    // ------------------------------------------------------------ Analisis
+
+    void analizar_comunesYVariantes()
+    {
+        for (const char *p : {"123456", "password", "P4ssw0rd2024!", "qwertyuiop", "TeQuiero123",
+                              "Contraseña", "admin"}) {
+            const Analisis a = Generador::analizar(QString::fromUtf8(p));
+            QVERIFY2(a.bits < 30, p);
+            QVERIFY2(!a.avisos.isEmpty() && a.avisos.first().contains(QStringLiteral("más usadas")), p);
+        }
+    }
+
+    void analizar_patrones()
+    {
+        auto tiene = [](const char *clave, const char *texto) {
+            for (const QString &a : Generador::analizar(QString::fromUtf8(clave)).avisos)
+                if (a.contains(QString::fromUtf8(texto))) return true;
+            return false;
+        };
+        QVERIFY(tiene("aaaaaaaa", "Repite"));
+        QVERIFY(tiene("Zx9abcdefKw", "secuencias"));
+        QVERIFY(tiene("Kr8asdfghWq!", "teclado"));
+        QVERIFY(tiene("Kr8!Wq2001zX", "año"));
+        QVERIFY(tiene("Murcielago9Trapo", "diccionario"));
+        QVERIFY(tiene("J8x!", "corta"));
+        QVERIFY(!tiene("aaaaaaaa", "diccionario"));
+    }
+
+    void analizar_aleatoriaYVacia()
+    {
+        QCOMPARE(Generador::analizar(QString()).bits, 0.0);
+        QVERIFY(Generador::analizar(QString()).avisos.isEmpty());
+        // Una generada al azar no tiene avisos y conserva casi toda su entropia
+        OpcionesClave o;
+        o.longitud = 20;
+        o.sinAmbiguos = true;
+        int limpias = 0;
+        for (int i = 0; i < 20; ++i) {
+            const Analisis a = Generador::analizar(Generador::generar(o));
+            QVERIFY(a.bits > 0.75 * Generador::entropia(o));
+            limpias += a.avisos.isEmpty();
+        }
+        QVERIFY(limpias >= 15);  // muy de vez en cuando sale "abc" o una palabra corta
+    }
+
+    void analizar_fraseGenerada()
+    {
+        // Una frase de 6 palabras se reconoce como palabras pero sigue siendo fuerte
+        OpcionesFrase o;
+        const Analisis a = Generador::analizar(Generador::generarFrase(o));
+        QVERIFY2(a.bits >= 70, qPrintable(QString::number(a.bits)));
+        QVERIFY(qAbs(a.bits - Generador::entropiaFrase(o)) < 25);
+    }
+
     // --------------------------------------------------------------- Ventana
+
+    void ventana_ocultar()
+    {
+        Widget w;
+        const QString clave = w.clave();
+        w.setOculta(true);
+        QCOMPARE(w.clave(), clave);
+        QCOMPARE(w.m_campo->toPlainText(), QString(clave.size(), QChar(0x2022)));
+        w.copiar();  // copia la de verdad, no los puntos
+        QCOMPARE(QApplication::clipboard()->text(), clave);
+        w.borrarPortapapeles();
+        w.setOculta(false);
+        QCOMPARE(w.m_campo->toPlainText(), clave);
+    }
+
+    void ventana_comprobar()
+    {
+        Widget w;
+        w.setModo(Widget::ModoComprobar);
+        QVERIFY(!w.m_generar->isVisibleTo(&w));
+        QCOMPARE(w.m_barra->nivel(), 0);
+        w.m_entrada->setText(QStringLiteral("123456"));
+        QCOMPARE(w.m_barra->nivel(), 1);
+        QVERIFY(w.m_avisos->text().contains(QStringLiteral("más usadas")));
+        w.m_entrada->setText(QStringLiteral("r7#Kq9!vLz2@xW4mPt"));
+        QCOMPARE(w.m_barra->nivel(), 5);
+        // Al salir del modo se borra lo escrito
+        w.setModo(Widget::ModoClave);
+        QVERIFY(w.m_entrada->text().isEmpty());
+        QVERIFY(w.m_generar->isVisibleTo(&w));
+    }
 
     void ventana_modoFrase()
     {

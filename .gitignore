@@ -42,11 +42,13 @@ ui_*.h
 .qmake.stash
 
 # Qt test artifacts
-test_widget
-test_widget.moc
+tests/test_widget
+*.moc
 
 # Application binary
-passwordgenerator
+src/passwordgenerator
+.qm/
+*.qm
 
 # debhelper / paquetes / linyaps
 debian/.debhelper/

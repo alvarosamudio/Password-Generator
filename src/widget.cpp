@@ -1,6 +1,9 @@
 #include "widget.h"
 
 #include <DButtonBox>
+#include <DIconButton>
+#include <DPasswordEdit>
+#include <DStyle>
 #include <DMessageManager>
 
 #include <QApplication>
@@ -119,7 +122,9 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     m_btnClave = new DButtonBoxButton(tr("Contraseña"), m_selector);
     m_btnFrase = new DButtonBoxButton(tr("Frase de contraseña"), m_selector);
     m_btnFrase->setToolTip(tr("Varias palabras al azar: más fácil de recordar y de teclear"));
-    m_selector->setButtonList({m_btnClave, m_btnFrase}, true);
+    m_btnComprobar = new DButtonBoxButton(tr("Comprobar"), m_selector);
+    m_btnComprobar->setToolTip(tr("Analiza la fuerza de una contraseña que ya tienes"));
+    m_selector->setButtonList({m_btnClave, m_btnFrase, m_btnComprobar}, true);
     m_btnClave->setChecked(true);
 
     // Contrasena: monoespaciada, grande, seleccionable y partida en cualquier
@@ -139,6 +144,42 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     m_campo->setFixedHeight(QFontMetrics(mono).lineSpacing() * 3 + 16);
     m_campo->setAccessibleName(tr("Contraseña generada"));
 
+    m_ojo = new DIconButton(DStyle::SP_ShowPassword, this);
+    m_ojo->setCheckable(true);
+    m_ojo->setFixedSize(40, 40);
+    m_ojo->setIconSize(QSize(20, 20));
+    m_ojo->setToolTip(tr("Ocultar la contraseña"));
+    m_ojo->setAccessibleName(tr("Mostrar u ocultar la contraseña"));
+
+    auto *filaCampo = new QWidget(this);
+    auto *hCampo = new QHBoxLayout(filaCampo);
+    hCampo->setContentsMargins(0, 0, 0, 0);
+    hCampo->setSpacing(6);
+    hCampo->addWidget(m_campo, 1);
+    hCampo->addWidget(m_ojo, 0, Qt::AlignTop);
+
+    // Comprobar: el texto nunca se guarda ni sale del equipo
+    auto *filaEntrada = new QWidget(this);
+    m_entrada = new DPasswordEdit(filaEntrada);
+    m_entrada->setPlaceholderText(tr("Escribe o pega una contraseña"));
+    m_entrada->setAccessibleName(tr("Contraseña a comprobar"));
+    QFont fEntrada = m_entrada->font();
+    fEntrada.setPointSizeF(fEntrada.pointSizeF() + 3);
+    m_entrada->setFont(fEntrada);
+    auto *privacidad = new QLabel(tr("Se analiza en este equipo: no se guarda ni se envía a ningún sitio."),
+                                  filaEntrada);
+    privacidad->setWordWrap(true);
+    auto *vEntrada = new QVBoxLayout(filaEntrada);
+    vEntrada->setContentsMargins(0, 8, 0, 0);
+    vEntrada->addWidget(m_entrada);
+    vEntrada->addWidget(privacidad);
+    vEntrada->addStretch(1);
+
+    m_superior = new QStackedWidget(this);
+    m_superior->addWidget(filaCampo);
+    m_superior->addWidget(filaEntrada);
+    m_superior->setFixedHeight(m_campo->height());
+
     m_barra = new BarraFuerza(this);
     m_fuerza = new QLabel(this);
     m_fuerza->setMinimumWidth(150);
@@ -150,6 +191,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     gris.setAlphaF(0.65);
     pal.setColor(QPalette::WindowText, gris);
     m_tiempo->setPalette(pal);
+    privacidad->setPalette(pal);
 
     // ---- Pagina "Contrasena"
     auto *pagClave = new QWidget(this);
@@ -213,9 +255,21 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     vFrase->addLayout(opcFrase);
     vFrase->addStretch(1);
 
+    // ---- Pagina "Comprobar": lista de problemas encontrados
+    auto *pagComprobar = new QWidget(this);
+    m_avisos = new QLabel(pagComprobar);
+    m_avisos->setWordWrap(true);
+    m_avisos->setTextFormat(Qt::RichText);
+    m_avisos->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    auto *vComprobar = new QVBoxLayout(pagComprobar);
+    vComprobar->setContentsMargins(0, 0, 0, 0);
+    vComprobar->addWidget(m_avisos);
+    vComprobar->addStretch(1);
+
     m_paginas = new QStackedWidget(this);
     m_paginas->addWidget(pagClave);
     m_paginas->addWidget(pagFrase);
+    m_paginas->addWidget(pagComprobar);
 
     m_generar = new QPushButton(tr("Generar otra"), this);
     m_copiar = new QPushButton(tr("Copiar"), this);
@@ -242,7 +296,7 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     v->setContentsMargins(20, 6, 20, 20);
     v->setSpacing(10);
     v->addLayout(selector);
-    v->addWidget(m_campo);
+    v->addWidget(m_superior);
     v->addLayout(fuerza);
     v->addWidget(m_tiempo);
     v->addSpacing(6);
@@ -257,8 +311,10 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
                          m_sinAmbiguos, m_unoDeCada, m_fraseMayusculas, m_fraseNumero})
         connect(c, &QCheckBox::toggled, this, &Widget::regenerar);
     connect(m_selector, &DButtonBox::buttonClicked, this, [this](QAbstractButton *b) {
-        setModo(b == m_btnFrase ? ModoFrase : ModoClave);
+        setModo(b == m_btnFrase ? ModoFrase : b == m_btnComprobar ? ModoComprobar : ModoClave);
     });
+    connect(m_ojo, &DIconButton::toggled, this, &Widget::setOculta);
+    connect(m_entrada, &DLineEdit::textChanged, this, &Widget::analizarEntrada);
     connect(m_generar, &QPushButton::clicked, this, &Widget::regenerar);
     connect(m_copiar, &QPushButton::clicked, this, &Widget::copiar);
 
@@ -343,9 +399,52 @@ void Widget::setOpcionesFrase(const OpcionesFrase &o)
 void Widget::setModo(Modo m)
 {
     m_modo = m;
-    (m == ModoFrase ? m_btnFrase : m_btnClave)->setChecked(true);
+    (m == ModoFrase ? m_btnFrase : m == ModoComprobar ? m_btnComprobar : m_btnClave)->setChecked(true);
     m_paginas->setCurrentIndex(m);
-    regenerar();
+    const bool comprobar = m == ModoComprobar;
+    m_superior->setCurrentIndex(comprobar ? 1 : 0);
+    m_generar->setVisible(!comprobar);
+    m_copiar->setVisible(!comprobar);
+    if (comprobar) {
+        m_entrada->setFocus();
+        analizarEntrada();
+    } else {
+        m_entrada->clear();  // no dejar la contrasena escrita en memoria
+        regenerar();
+    }
+}
+
+void Widget::setOculta(bool oculta)
+{
+    m_oculta = oculta;
+    if (m_ojo->isChecked() != oculta) m_ojo->setChecked(oculta);
+    m_ojo->setIcon(oculta ? DStyle::SP_HidePassword : DStyle::SP_ShowPassword);
+    m_ojo->setToolTip(oculta ? tr("Mostrar la contraseña") : tr("Ocultar la contraseña"));
+    mostrar();
+}
+
+void Widget::analizarEntrada()
+{
+    if (m_modo != ModoComprobar) return;
+    const QString texto = m_entrada->text();
+    if (texto.isEmpty()) {
+        m_barra->setNivel(0);
+        m_fuerza->clear();
+        m_tiempo->setText(tr("Escribe una contraseña para ver su fuerza real y qué la debilita."));
+        m_avisos->clear();
+        return;
+    }
+    const Analisis a = Generador::analizar(texto);
+    mostrarFuerza(a.bits);
+    if (a.avisos.isEmpty()) {
+        m_avisos->setText(QStringLiteral("<p style='color:#46a758'>✔ %1</p>")
+                              .arg(tr("No se han encontrado puntos débiles.").toHtmlEscaped()));
+    } else {
+        QString html = QStringLiteral("<ul style='margin-left:-20px'>");
+        for (const QString &aviso : a.avisos)
+            html += QStringLiteral("<li style='margin-bottom:4px'>%1</li>").arg(aviso.toHtmlEscaped());
+        m_avisos->setText(html + QStringLiteral("</ul>"));
+    }
 }
 
 void Widget::actualizarControles()
@@ -361,8 +460,12 @@ void Widget::actualizarControles()
 
 void Widget::actualizarFuerza()
 {
-    const double bits = m_modo == ModoFrase ? Generador::entropiaFrase(opcionesFrase())
-                                            : Generador::entropia(opciones());
+    mostrarFuerza(m_modo == ModoFrase ? Generador::entropiaFrase(opcionesFrase())
+                                      : Generador::entropia(opciones()));
+}
+
+void Widget::mostrarFuerza(double bits)
+{
     QString texto;
     switch (Generador::fuerza(bits)) {
     case Generador::Fuerza::MuyDebil:  m_barra->setNivel(1); texto = tr("Muy débil"); break;
@@ -382,6 +485,12 @@ void Widget::actualizarFuerza()
 // Colorea numeros y simbolos para distinguirlos de las letras de un vistazo
 void Widget::mostrar()
 {
+    if (m_oculta) {
+        m_campo->setPlainText(QString(m_clave.size(), QChar(0x2022)));
+        m_campo->setAlignment(Qt::AlignCenter);
+        static_cast<CampoClave *>(m_campo)->centrar();
+        return;
+    }
     QString html;
     html.reserve(m_clave.size() * 40);
     for (const QChar c : m_clave) {
@@ -402,7 +511,7 @@ void Widget::mostrar()
 
 void Widget::regenerar()
 {
-    if (m_cargando) return;
+    if (m_cargando || m_modo == ModoComprobar) return;
     actualizarControles();
     m_clave = m_modo == ModoFrase ? Generador::generarFrase(opcionesFrase())
                                   : Generador::generar(opciones());
@@ -412,7 +521,7 @@ void Widget::regenerar()
 
 void Widget::copiar()
 {
-    if (m_clave.isEmpty()) return;
+    if (m_clave.isEmpty() || m_modo == ModoComprobar) return;
     QApplication::clipboard()->setText(m_clave);
     m_copiada = m_clave;
     m_borrado.start();

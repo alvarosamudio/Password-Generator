@@ -9,7 +9,7 @@ class QCheckBox;
 class QComboBox;
 class QStackedWidget;
 class QAbstractButton;
-namespace Dtk { namespace Widget { class DButtonBox; class DButtonBoxButton; } }
+namespace Dtk { namespace Widget { class DButtonBox; class DButtonBoxButton; class DIconButton; class DPasswordEdit; } }
 class QLabel;
 class QPushButton;
 class QSlider;
@@ -42,7 +42,7 @@ public:
     explicit Widget(QWidget *parent = nullptr);
     ~Widget() override;
 
-    enum Modo { ModoClave = 0, ModoFrase = 1 };
+    enum Modo { ModoClave = 0, ModoFrase = 1, ModoComprobar = 2 };
 
     OpcionesClave opciones() const;
     void setOpciones(const OpcionesClave &o);
@@ -50,6 +50,9 @@ public:
     void setOpcionesFrase(const OpcionesFrase &o);
     Modo modo() const { return m_modo; }
     void setModo(Modo m);
+    // Muestra la contrasena generada o la tapa con puntos
+    bool oculta() const { return m_oculta; }
+    void setOculta(bool oculta);
     QString clave() const { return m_clave; }
 
     // Segundos que la contrasena copiada permanece en el portapapeles
@@ -62,11 +65,17 @@ public slots:
 private:
     void actualizarControles();
     void actualizarFuerza();
+    void mostrarFuerza(double bits);
     void mostrar();
+    void analizarEntrada();
     void borrarPortapapeles();
 
     Dtk::Widget::DButtonBox *m_selector;
-    Dtk::Widget::DButtonBoxButton *m_btnClave, *m_btnFrase;
+    Dtk::Widget::DButtonBoxButton *m_btnClave, *m_btnFrase, *m_btnComprobar;
+    QStackedWidget *m_superior;  // contrasena generada / campo para comprobar
+    Dtk::Widget::DIconButton *m_ojo;
+    Dtk::Widget::DPasswordEdit *m_entrada;
+    QLabel *m_avisos;
     QStackedWidget *m_paginas;
     QTextEdit *m_campo;
     BarraFuerza *m_barra;
@@ -82,6 +91,7 @@ private:
     QCheckBox *m_fraseMayusculas, *m_fraseNumero;
     QPushButton *m_generar, *m_copiar;
     Modo m_modo = ModoClave;
+    bool m_oculta = false;
 
     QString m_clave;
     QString m_copiada;  // lo que pusimos en el portapapeles (para borrarlo)

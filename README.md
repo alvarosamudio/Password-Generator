@@ -22,7 +22,7 @@ A random password generator for Deepin Linux built with Qt6 and DTK6 (Deepin Too
 
 ## Screenshot
 
-![Password Generator](passwordgenerator.svg)
+![Password Generator](data/passwordgenerator.svg)
 
 ## Requirements
 
@@ -35,32 +35,42 @@ A random password generator for Deepin Linux built with Qt6 and DTK6 (Deepin Too
 ### Prerequisites
 
 ```bash
-sudo apt install qt6-base-dev qmake6 libdtk6widget-dev pkg-config build-essential
+sudo apt install qt6-base-dev qmake6 qt6-l10n-tools libdtk6widget-dev pkg-config build-essential
 ```
 
 ### Compile
 
 ```bash
-export QT_SELECT=5
-qmake6 app.pro PREFIX=/usr
+mkdir build && cd build
+qmake6 ../passwordgenerator.pro PREFIX=/usr
 make -j$(nproc)
+./src/passwordgenerator
 ```
 
 ### Run tests
 
 ```bash
-qmake6 testlib.pro
-make -j$(nproc)
-export QT_QPA_PLATFORM=offscreen
-./test_widget
+cd build
+QT_QPA_PLATFORM=offscreen make check
 ```
+
+## Project layout
+
+| Path | Contents |
+| --- | --- |
+| `passwordgenerator.pro` | Top-level project (builds `src` and `tests`) |
+| `src/` | Application code: generator logic (`generador.*`), window (`widget.*`, `mainwindow.*`) |
+| `tests/` | Qt Test suite |
+| `data/` | Icon, `.desktop` file, logo, passphrase word list and the Qt resource file |
+| `translations/` | Qt translations (en, pt, fr, it, zh_CN); the source language is Spanish |
+| `debian/` | Debian packaging |
 
 ## Install via .deb package
 
 Build the package:
 
 ```bash
-fakeroot debian/rules binary
+dpkg-buildpackage -us -uc -b
 ```
 
 Install:

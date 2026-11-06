@@ -34,7 +34,9 @@ MainWindow::MainWindow(QWidget *parent)
     f.mayusculas = s.value("frase/mayusculas", f.mayusculas).toBool();
     f.numero = s.value("frase/numero", f.numero).toBool();
     w->setOpcionesFrase(f);
+    // El modo Comprobar no se recuerda: se empieza siempre generando
     w->setModo(s.value("modo").toInt() == Widget::ModoFrase ? Widget::ModoFrase : Widget::ModoClave);
+    w->setOculta(s.value("oculta", false).toBool());
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -54,6 +56,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     s.setValue("frase/separador", f.separador);
     s.setValue("frase/mayusculas", f.mayusculas);
     s.setValue("frase/numero", f.numero);
-    s.setValue("modo", int(w->modo()));
+    if (w->modo() != Widget::ModoComprobar) s.setValue("modo", int(w->modo()));
+    s.setValue("oculta", w->oculta());
     DMainWindow::closeEvent(event);
 }
