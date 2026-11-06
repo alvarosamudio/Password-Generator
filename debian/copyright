@@ -23,3 +23,10 @@ License: AGPL-3.0+
  On Debian systems, the complete text of the GNU Affero General
  Public License version 3 can be found in
  `/usr/share/common-licenses/AGPL-3`.
+
+Files: palabras.txt
+Copyright: 2026 Alvaro Samudio
+License: public-domain
+ Common Spanish words selected by hand and checked against the Spanish
+ word list of the Debian package "wspanish", whose word list is in the
+ public domain. No copyright is claimed on this list.

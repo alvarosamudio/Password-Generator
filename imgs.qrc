@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>Logo-Racoon.png</file>
         <file>passwordgenerator.svg</file>
+        <file>palabras.txt</file>
     </qresource>
 </RCC>

@@ -1,10 +1,12 @@
 #include "widget.h"
 
+#include <DButtonBox>
 #include <DMessageManager>
 
 #include <QApplication>
 #include <QCheckBox>
 #include <QClipboard>
+#include <QComboBox>
 #include <QFontDatabase>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -14,6 +16,7 @@
 #include <QShortcut>
 #include <QSlider>
 #include <QSpinBox>
+#include <QStackedWidget>
 #include <QTextEdit>
 #include <QTextFrame>
 #include <QVBoxLayout>
@@ -85,8 +88,40 @@ protected:
 
 // --------------------------------------------------------------------- Widget
 
+namespace {
+// Deslizador + casilla numerica sincronizados
+QHBoxLayout *filaNumero(QWidget *parent, const QString &texto, QSlider *&slider, QSpinBox *&spin,
+                        int min, int max)
+{
+    auto *lbl = new QLabel(texto, parent);
+    slider = new QSlider(Qt::Horizontal, parent);
+    slider->setRange(min, max);
+    spin = new QSpinBox(parent);
+    spin->setRange(min, max);
+    spin->setAccessibleName(texto);
+    lbl->setBuddy(spin);
+    QObject::connect(slider, &QSlider::valueChanged, spin, &QSpinBox::setValue);
+    QObject::connect(spin, qOverload<int>(&QSpinBox::valueChanged), slider, &QSlider::setValue);
+    auto *fila = new QHBoxLayout;
+    fila->addWidget(lbl);
+    fila->addSpacing(8);
+    fila->addWidget(slider, 1);
+    fila->addSpacing(8);
+    fila->addWidget(spin);
+    return fila;
+}
+} // namespace
+
 Widget::Widget(QWidget *parent) : QWidget(parent)
 {
+    // Selector de modo
+    m_selector = new DButtonBox(this);
+    m_btnClave = new DButtonBoxButton(tr("Contraseña"), m_selector);
+    m_btnFrase = new DButtonBoxButton(tr("Frase de contraseña"), m_selector);
+    m_btnFrase->setToolTip(tr("Varias palabras al azar: más fácil de recordar y de teclear"));
+    m_selector->setButtonList({m_btnClave, m_btnFrase}, true);
+    m_btnClave->setChecked(true);
+
     // Contrasena: monoespaciada, grande, seleccionable y partida en cualquier
     // caracter para que quepan las largas.
     m_campo = new CampoClave(this);
@@ -108,42 +143,26 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     m_fuerza = new QLabel(this);
     m_fuerza->setMinimumWidth(150);
     m_fuerza->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    m_tiempo = new QLabel(this);
+    m_tiempo->setWordWrap(true);
+    QPalette pal = m_tiempo->palette();
+    QColor gris = pal.color(QPalette::WindowText);
+    gris.setAlphaF(0.65);
+    pal.setColor(QPalette::WindowText, gris);
+    m_tiempo->setPalette(pal);
 
-    auto *lblLongitud = new QLabel(tr("Longitud"), this);
-    m_slider = new QSlider(Qt::Horizontal, this);
-    m_slider->setRange(Generador::LONGITUD_MIN, Generador::LONGITUD_MAX);
-    m_spin = new QSpinBox(this);
-    m_spin->setRange(Generador::LONGITUD_MIN, Generador::LONGITUD_MAX);
-    m_spin->setAccessibleName(tr("Longitud"));
-    lblLongitud->setBuddy(m_spin);
-
-    m_minusculas = new QCheckBox(tr("Minúsculas (a-z)"), this);
-    m_mayusculas = new QCheckBox(tr("Mayúsculas (A-Z)"), this);
-    m_numeros = new QCheckBox(tr("Números (0-9)"), this);
-    m_simbolos = new QCheckBox(tr("Símbolos (!#$%&…)"), this);
-    m_enie = new QCheckBox(tr("Incluir ñ y Ñ"), this);
-    m_sinAmbiguos = new QCheckBox(tr("Evitar caracteres confusos (I l 1 O 0 o)"), this);
-    m_unoDeCada = new QCheckBox(tr("Al menos uno de cada tipo"), this);
+    // ---- Pagina "Contrasena"
+    auto *pagClave = new QWidget(this);
+    QHBoxLayout *longitud = filaNumero(pagClave, tr("Longitud"), m_slider, m_spin,
+                                       Generador::LONGITUD_MIN, Generador::LONGITUD_MAX);
+    m_minusculas = new QCheckBox(tr("Minúsculas (a-z)"), pagClave);
+    m_mayusculas = new QCheckBox(tr("Mayúsculas (A-Z)"), pagClave);
+    m_numeros = new QCheckBox(tr("Números (0-9)"), pagClave);
+    m_simbolos = new QCheckBox(tr("Símbolos (!#$%&…)"), pagClave);
+    m_enie = new QCheckBox(tr("Incluir ñ y Ñ"), pagClave);
+    m_sinAmbiguos = new QCheckBox(tr("Evitar caracteres confusos (I l 1 O 0 o)"), pagClave);
+    m_unoDeCada = new QCheckBox(tr("Al menos uno de cada tipo"), pagClave);
     m_enie->setToolTip(tr("Muchas webs y teclados extranjeros no aceptan la ñ"));
-
-    m_generar = new QPushButton(tr("Generar otra"), this);
-    m_copiar = new QPushButton(tr("Copiar"), this);
-    m_generar->setToolTip(tr("Generar otra contraseña (F5)"));
-    m_copiar->setToolTip(tr("Copiar al portapapeles (Ctrl+C). Se borra a los %1 s.")
-                             .arg(SEGUNDOS_PORTAPAPELES));
-
-    // Distribucion
-    auto *fuerza = new QHBoxLayout;
-    fuerza->addWidget(m_barra, 1);
-    fuerza->addSpacing(12);
-    fuerza->addWidget(m_fuerza);
-
-    auto *longitud = new QHBoxLayout;
-    longitud->addWidget(lblLongitud);
-    longitud->addSpacing(8);
-    longitud->addWidget(m_slider, 1);
-    longitud->addSpacing(8);
-    longitud->addWidget(m_spin);
 
     auto *tipos = new QGridLayout;
     tipos->setHorizontalSpacing(24);
@@ -154,29 +173,92 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     tipos->addWidget(m_enie, 2, 0);
     tipos->addWidget(m_unoDeCada, 2, 1);
     tipos->addWidget(m_sinAmbiguos, 3, 0, 1, 2);
+    auto *vClave = new QVBoxLayout(pagClave);
+    vClave->setContentsMargins(0, 0, 0, 0);
+    vClave->setSpacing(12);
+    vClave->addLayout(longitud);
+    vClave->addLayout(tipos);
+    vClave->addStretch(1);
+
+    // ---- Pagina "Frase de contrasena"
+    auto *pagFrase = new QWidget(this);
+    QHBoxLayout *palabras = filaNumero(pagFrase, tr("Palabras"), m_sliderPalabras, m_spinPalabras,
+                                       Generador::PALABRAS_MIN, Generador::PALABRAS_MAX);
+    m_separador = new QComboBox(pagFrase);
+    m_separador->addItem(tr("Guion  ( - )"), QStringLiteral("-"));
+    m_separador->addItem(tr("Punto  ( . )"), QStringLiteral("."));
+    m_separador->addItem(tr("Guion bajo  ( _ )"), QStringLiteral("_"));
+    m_separador->addItem(tr("Espacio"), QStringLiteral(" "));
+    m_separador->addItem(tr("Ninguno"), QString());
+    auto *lblSep = new QLabel(tr("Separador"), pagFrase);
+    lblSep->setBuddy(m_separador);
+    m_fraseMayusculas = new QCheckBox(tr("Iniciales en mayúscula"), pagFrase);
+    m_fraseNumero = new QCheckBox(tr("Añadir un número"), pagFrase);
+    m_fraseNumero->setToolTip(tr("Muchas webs exigen al menos un número"));
+    auto *filaSep = new QHBoxLayout;
+    filaSep->addWidget(lblSep);
+    filaSep->addSpacing(8);
+    filaSep->addWidget(m_separador);
+    filaSep->addStretch(1);
+    auto *opcFrase = new QHBoxLayout;
+    opcFrase->setSpacing(24);
+    opcFrase->addWidget(m_fraseMayusculas);
+    opcFrase->addWidget(m_fraseNumero);
+    opcFrase->addStretch(1);
+    auto *vFrase = new QVBoxLayout(pagFrase);
+    vFrase->setContentsMargins(0, 0, 0, 0);
+    vFrase->setSpacing(12);
+    vFrase->addLayout(palabras);
+    vFrase->addLayout(filaSep);
+    vFrase->addLayout(opcFrase);
+    vFrase->addStretch(1);
+
+    m_paginas = new QStackedWidget(this);
+    m_paginas->addWidget(pagClave);
+    m_paginas->addWidget(pagFrase);
+
+    m_generar = new QPushButton(tr("Generar otra"), this);
+    m_copiar = new QPushButton(tr("Copiar"), this);
+    m_generar->setToolTip(tr("Generar otra (F5)"));
+    m_copiar->setToolTip(tr("Copiar al portapapeles (Ctrl+C). Se borra a los %1 s.")
+                             .arg(SEGUNDOS_PORTAPAPELES));
+
+    // Distribucion
+    auto *selector = new QHBoxLayout;
+    selector->addStretch(1);
+    selector->addWidget(m_selector);
+    selector->addStretch(1);
+
+    auto *fuerza = new QHBoxLayout;
+    fuerza->addWidget(m_barra, 1);
+    fuerza->addSpacing(12);
+    fuerza->addWidget(m_fuerza);
 
     auto *botones = new QHBoxLayout;
     botones->addWidget(m_generar, 1);
     botones->addWidget(m_copiar, 1);
 
     auto *v = new QVBoxLayout(this);
-    v->setContentsMargins(20, 10, 20, 20);
-    v->setSpacing(12);
+    v->setContentsMargins(20, 6, 20, 20);
+    v->setSpacing(10);
+    v->addLayout(selector);
     v->addWidget(m_campo);
     v->addLayout(fuerza);
-    v->addSpacing(4);
-    v->addLayout(longitud);
-    v->addLayout(tipos);
-    v->addStretch(1);
+    v->addWidget(m_tiempo);
+    v->addSpacing(6);
+    v->addWidget(m_paginas, 1);
     v->addLayout(botones);
 
     // Cualquier cambio genera una contrasena nueva al momento
-    connect(m_slider, &QSlider::valueChanged, m_spin, &QSpinBox::setValue);
-    connect(m_spin, qOverload<int>(&QSpinBox::valueChanged), m_slider, &QSlider::setValue);
     connect(m_spin, qOverload<int>(&QSpinBox::valueChanged), this, &Widget::regenerar);
+    connect(m_spinPalabras, qOverload<int>(&QSpinBox::valueChanged), this, &Widget::regenerar);
+    connect(m_separador, qOverload<int>(&QComboBox::currentIndexChanged), this, &Widget::regenerar);
     for (QCheckBox *c : {m_minusculas, m_mayusculas, m_numeros, m_simbolos, m_enie,
-                         m_sinAmbiguos, m_unoDeCada})
+                         m_sinAmbiguos, m_unoDeCada, m_fraseMayusculas, m_fraseNumero})
         connect(c, &QCheckBox::toggled, this, &Widget::regenerar);
+    connect(m_selector, &DButtonBox::buttonClicked, this, [this](QAbstractButton *b) {
+        setModo(b == m_btnFrase ? ModoFrase : ModoClave);
+    });
     connect(m_generar, &QPushButton::clicked, this, &Widget::regenerar);
     connect(m_copiar, &QPushButton::clicked, this, &Widget::copiar);
 
@@ -190,6 +272,9 @@ Widget::Widget(QWidget *parent) : QWidget(parent)
     m_borrado.setInterval(SEGUNDOS_PORTAPAPELES * 1000);
     connect(&m_borrado, &QTimer::timeout, this, &Widget::borrarPortapapeles);
 
+    m_cargando = true;
+    setOpcionesFrase(OpcionesFrase{});
+    m_cargando = false;
     setOpciones(OpcionesClave{});
 }
 
@@ -215,6 +300,7 @@ OpcionesClave Widget::opciones() const
 
 void Widget::setOpciones(const OpcionesClave &o)
 {
+    const bool cargando = m_cargando;
     m_cargando = true;
     m_spin->setValue(qBound(Generador::LONGITUD_MIN, o.longitud, Generador::LONGITUD_MAX));
     m_minusculas->setChecked(o.minusculas);
@@ -227,7 +313,38 @@ void Widget::setOpciones(const OpcionesClave &o)
     m_enie->setChecked(o.enie);
     m_sinAmbiguos->setChecked(o.sinAmbiguos);
     m_unoDeCada->setChecked(o.unoDeCada);
-    m_cargando = false;
+    m_cargando = cargando;
+    regenerar();
+}
+
+OpcionesFrase Widget::opcionesFrase() const
+{
+    OpcionesFrase o;
+    o.palabras = m_spinPalabras->value();
+    o.separador = m_separador->currentData().toString();
+    o.mayusculas = m_fraseMayusculas->isChecked();
+    o.numero = m_fraseNumero->isChecked();
+    return o;
+}
+
+void Widget::setOpcionesFrase(const OpcionesFrase &o)
+{
+    const bool cargando = m_cargando;
+    m_cargando = true;
+    m_spinPalabras->setValue(qBound(Generador::PALABRAS_MIN, o.palabras, Generador::PALABRAS_MAX));
+    const int i = m_separador->findData(o.separador);
+    m_separador->setCurrentIndex(i >= 0 ? i : 0);
+    m_fraseMayusculas->setChecked(o.mayusculas);
+    m_fraseNumero->setChecked(o.numero);
+    m_cargando = cargando;
+    regenerar();
+}
+
+void Widget::setModo(Modo m)
+{
+    m_modo = m;
+    (m == ModoFrase ? m_btnFrase : m_btnClave)->setChecked(true);
+    m_paginas->setCurrentIndex(m);
     regenerar();
 }
 
@@ -244,7 +361,8 @@ void Widget::actualizarControles()
 
 void Widget::actualizarFuerza()
 {
-    const double bits = Generador::entropia(opciones());
+    const double bits = m_modo == ModoFrase ? Generador::entropiaFrase(opcionesFrase())
+                                            : Generador::entropia(opciones());
     QString texto;
     switch (Generador::fuerza(bits)) {
     case Generador::Fuerza::MuyDebil:  m_barra->setNivel(1); texto = tr("Muy débil"); break;
@@ -254,18 +372,41 @@ void Widget::actualizarFuerza()
     case Generador::Fuerza::MuyFuerte: m_barra->setNivel(5); texto = tr("Muy fuerte"); break;
     }
     m_fuerza->setText(tr("%1 · %2 bits").arg(texto).arg(qRound(bits)));
-    m_fuerza->setToolTip(tr("Entropía estimada: cuántos intentos haría falta para adivinarla "
-                            "(2 elevado a ese número)."));
+    m_fuerza->setToolTip(tr("Entropía estimada: hacen falta de media 2 elevado a ese número "
+                            "(entre dos) intentos para adivinarla."));
+    m_tiempo->setText(tr("Un equipo muy potente tardaría %1 en adivinarla.")
+                          .arg(Generador::tiempoDescifrado(bits)));
+    m_tiempo->setToolTip(tr("Estimación con 10 000 millones de intentos por segundo."));
+}
+
+// Colorea numeros y simbolos para distinguirlos de las letras de un vistazo
+void Widget::mostrar()
+{
+    QString html;
+    html.reserve(m_clave.size() * 40);
+    for (const QChar c : m_clave) {
+        const QString e = QString(c).toHtmlEscaped();
+        if (c.isDigit())
+            html += QStringLiteral("<span style='color:#3d8bfd'>%1</span>").arg(e);
+        else if (!c.isLetter())
+            html += QStringLiteral("<span style='color:#f08c00'>%1</span>").arg(e);
+        else
+            html += e;
+    }
+    // pre-wrap conserva los espacios tal cual (con &nbsp; se copiaria un
+    // espacio distinto al seleccionar a mano)
+    m_campo->setHtml(QStringLiteral("<span style='white-space:pre-wrap'>%1</span>").arg(html));
+    m_campo->setAlignment(Qt::AlignCenter);
+    static_cast<CampoClave *>(m_campo)->centrar();
 }
 
 void Widget::regenerar()
 {
     if (m_cargando) return;
     actualizarControles();
-    m_clave = Generador::generar(opciones());
-    m_campo->setPlainText(m_clave);
-    m_campo->setAlignment(Qt::AlignCenter);
-    static_cast<CampoClave *>(m_campo)->centrar();
+    m_clave = m_modo == ModoFrase ? Generador::generarFrase(opcionesFrase())
+                                  : Generador::generar(opciones());
+    mostrar();
     actualizarFuerza();
 }
 

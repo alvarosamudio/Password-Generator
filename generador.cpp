@@ -1,5 +1,7 @@
 #include "generador.h"
 
+#include <QCoreApplication>
+#include <QFile>
 #include <QRandomGenerator>
 #include <QtMath>
 
@@ -82,6 +84,81 @@ Fuerza fuerza(double bits)
     if (bits < 80) return Fuerza::Aceptable;
     if (bits < 112) return Fuerza::Fuerte;
     return Fuerza::MuyFuerte;
+}
+
+const QStringList &listaPalabras()
+{
+    static const QStringList lista = [] {
+        QStringList l;
+        QFile f(QStringLiteral(":/palabras.txt"));
+        if (f.open(QIODevice::ReadOnly | QIODevice::Text))
+            for (const QByteArray &linea : f.readAll().split('\n'))
+                if (!linea.trimmed().isEmpty()) l << QString::fromUtf8(linea.trimmed());
+        l.removeDuplicates();
+        return l;
+    }();
+    return lista;
+}
+
+QString generarFrase(const OpcionesFrase &o, QRandomGenerator *rng)
+{
+    if (!rng) rng = QRandomGenerator::system();
+    const QStringList &lista = listaPalabras();
+    if (lista.isEmpty()) return QString();
+    const int n = qBound(PALABRAS_MIN, o.palabras, PALABRAS_MAX);
+
+    QStringList elegidas;
+    for (int i = 0; i < n; ++i) {
+        QString w = lista.at(int(rng->bounded(quint32(lista.size()))));
+        if (o.mayusculas) w[0] = w[0].toUpper();
+        elegidas << w;
+    }
+    if (o.numero) {
+        const int cual = int(rng->bounded(quint32(n)));
+        elegidas[cual] += QString::number(rng->bounded(10));
+    }
+    return elegidas.join(o.separador);
+}
+
+double entropiaFrase(const OpcionesFrase &o)
+{
+    const int tam = listaPalabras().size();
+    if (tam < 2) return 0.0;
+    const int n = qBound(PALABRAS_MIN, o.palabras, PALABRAS_MAX);
+    double bits = n * std::log2(double(tam));
+    if (o.numero) bits += std::log2(10.0 * n);  // que digito y en que palabra
+    return bits;
+}
+
+QString tiempoDescifrado(double bits)
+{
+    auto tr = [](const char *t) { return QCoreApplication::translate("Generador", t); };
+    // Media: la mitad de las combinaciones. Se trabaja en log10 para no
+    // desbordar con entropias altas.
+    const double log10seg = (bits - 1) * std::log10(2.0) - 10;
+    if (log10seg < 0) return tr("al instante");
+    const double seg = std::pow(10.0, qMin(log10seg, 300.0));
+    struct Unidad { double seg; const char *uno; const char *varios; };
+    static const Unidad unidades[] = {
+        {31557600.0 * 100, "1 siglo", "%1 siglos"},
+        {31557600.0, "1 año", "%1 años"},
+        {86400.0, "1 día", "%1 días"},
+        {3600.0, "1 hora", "%1 horas"},
+        {60.0, "1 minuto", "%1 minutos"},
+        {1.0, "1 segundo", "%1 segundos"},
+    };
+    const double anios = seg / 31557600.0;
+    if (anios >= 1.4e10) return tr("más que la edad del universo");
+    if (anios >= 1e9) return tr("%1 mil millones de años").arg(qRound(anios / 1e9));
+    if (anios >= 1e6) return tr("%1 millones de años").arg(qRound(anios / 1e6));
+    if (anios >= 1e4) return tr("%1 mil años").arg(qRound(anios / 1e3));
+    for (const Unidad &u : unidades) {
+        if (seg >= u.seg) {
+            const long long v = qRound64(seg / u.seg);
+            return v == 1 ? tr(u.uno) : tr(u.varios).arg(v);
+        }
+    }
+    return tr("al instante");
 }
 
 } // namespace Generador

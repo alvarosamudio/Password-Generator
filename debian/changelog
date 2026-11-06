@@ -13,7 +13,13 @@ password-generator (0.2.0) unstable; urgency=medium
     el reparto. Simbolos solo ASCII que aceptan las webs.
   * Copiar (Ctrl+C) avisa y borra la contrasena del portapapeles a los 30 s
     o al cerrar, si sigue ahi. F5 / Ctrl+R generan otra.
-  * Recuerda las opciones elegidas (nunca la contrasena).
+  * Modo "Frase de contrasena": palabras comunes al azar (lista propia de
+    2685 palabras en espanol sin tildes ni n, comprobadas contra el
+    diccionario wspanish, de dominio publico), con separador, iniciales en
+    mayuscula y numero opcionales.
+  * Numeros y simbolos en color para distinguirlos de las letras.
+  * Estimacion del tiempo que tardaria un equipo potente en adivinarla.
+  * Recuerda las opciones elegidas y el modo (nunca la contrasena).
   * Icono nuevo y dialogo "Acerca de" corregido.
   * Empaquetado debhelper estandar (sin rutas locales), multi-arquitectura,
     con acceso directo en el menu y pruebas ejecutadas al compilar.

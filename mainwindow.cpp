@@ -13,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(w);
     titlebar()->setIcon(QIcon(QStringLiteral(":/passwordgenerator.svg")));
     titlebar()->setTitle(QString());
-    setMinimumSize(540, 440);
-    resize(600, 470);
+    setMinimumSize(560, 500);
+    resize(620, 530);
 
     // Recuerda las opciones elegidas (nunca la contrasena)
     QSettings s;
@@ -28,6 +28,13 @@ MainWindow::MainWindow(QWidget *parent)
     o.sinAmbiguos = s.value("sinAmbiguos", o.sinAmbiguos).toBool();
     o.unoDeCada = s.value("unoDeCada", o.unoDeCada).toBool();
     w->setOpciones(o);
+    OpcionesFrase f;
+    f.palabras = s.value("frase/palabras", f.palabras).toInt();
+    f.separador = s.value("frase/separador", f.separador).toString();
+    f.mayusculas = s.value("frase/mayusculas", f.mayusculas).toBool();
+    f.numero = s.value("frase/numero", f.numero).toBool();
+    w->setOpcionesFrase(f);
+    w->setModo(s.value("modo").toInt() == Widget::ModoFrase ? Widget::ModoFrase : Widget::ModoClave);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -42,5 +49,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     s.setValue("enie", o.enie);
     s.setValue("sinAmbiguos", o.sinAmbiguos);
     s.setValue("unoDeCada", o.unoDeCada);
+    const OpcionesFrase f = w->opcionesFrase();
+    s.setValue("frase/palabras", f.palabras);
+    s.setValue("frase/separador", f.separador);
+    s.setValue("frase/mayusculas", f.mayusculas);
+    s.setValue("frase/numero", f.numero);
+    s.setValue("modo", int(w->modo()));
     DMainWindow::closeEvent(event);
 }

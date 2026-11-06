@@ -7,6 +7,10 @@
 #include <QSlider>
 #include <QSpinBox>
 #include <QTextEdit>
+#include <QComboBox>
+#include <QStackedWidget>
+#include <QSet>
+#include <cmath>
 
 #include "generador.h"
 #include "widget.h"
@@ -122,7 +126,82 @@ private slots:
         QCOMPARE(Generador::entropia(solo(false, false, false, false)), 0.0);
     }
 
+    // ------------------------------------------------------------- Frases
+
+    void lista_palabrasValida()
+    {
+        const QStringList &l = Generador::listaPalabras();
+        QVERIFY2(l.size() >= 2000, qPrintable(QString::number(l.size())));
+        QCOMPARE(QSet<QString>(l.cbegin(), l.cend()).size(), l.size());
+        for (const QString &w : l)
+            for (const QChar c : w)
+                QVERIFY2(c >= QLatin1Char('a') && c <= QLatin1Char('z'), qPrintable(w));
+    }
+
+    void frase_formato()
+    {
+        OpcionesFrase o;
+        o.palabras = 6;
+        o.separador = QStringLiteral(".");
+        o.mayusculas = true;
+        o.numero = true;
+        for (int i = 0; i < 50; ++i) {
+            const QString f = Generador::generarFrase(o);
+            const QStringList partes = f.split(QLatin1Char('.'));
+            QCOMPARE(partes.size(), 6);
+            int digitos = 0;
+            for (const QString &p : partes) {
+                QVERIFY(p.at(0).isUpper());
+                for (const QChar c : p) digitos += c.isDigit();
+                QString base = p;
+                while (base.back().isDigit()) base.chop(1);
+                QVERIFY2(Generador::listaPalabras().contains(base.toLower()), qPrintable(p));
+            }
+            QCOMPARE(digitos, 1);
+        }
+        o.mayusculas = false;
+        o.numero = false;
+        o.separador = QString();
+        const QString f = Generador::generarFrase(o);
+        QCOMPARE(f, f.toLower());
+        for (const QChar c : f) QVERIFY(c.isLetter());
+    }
+
+    void frase_entropia()
+    {
+        OpcionesFrase o;
+        o.numero = false;
+        o.palabras = 5;
+        const double porPalabra = std::log2(double(Generador::listaPalabras().size()));
+        QVERIFY(qAbs(Generador::entropiaFrase(o) - 5 * porPalabra) < 1e-9);
+        o.numero = true;
+        QVERIFY(Generador::entropiaFrase(o) > 5 * porPalabra);
+    }
+
+    void tiempoDescifrado_textos()
+    {
+        QCOMPARE(Generador::tiempoDescifrado(20), QStringLiteral("al instante"));
+        QVERIFY(Generador::tiempoDescifrado(40).endsWith(QStringLiteral("segundos")));
+        QVERIFY(Generador::tiempoDescifrado(60).endsWith(QStringLiteral("años")));
+        QCOMPARE(Generador::tiempoDescifrado(200), QStringLiteral("más que la edad del universo"));
+        QCOMPARE(Generador::tiempoDescifrado(5000), QStringLiteral("más que la edad del universo"));
+    }
+
     // --------------------------------------------------------------- Ventana
+
+    void ventana_modoFrase()
+    {
+        Widget w;
+        w.setModo(Widget::ModoFrase);
+        QCOMPARE(w.m_paginas->currentIndex(), 1);
+        QCOMPARE(w.clave().count(QLatin1Char('-')), OpcionesFrase{}.palabras - 1);
+        QCOMPARE(w.m_campo->toPlainText(), w.clave());
+        w.m_separador->setCurrentIndex(w.m_separador->findData(QStringLiteral(" ")));
+        QCOMPARE(w.clave().count(QLatin1Char(' ')), OpcionesFrase{}.palabras - 1);
+        QCOMPARE(w.m_campo->toPlainText(), w.clave());  // espacios normales
+        w.setModo(Widget::ModoClave);
+        QCOMPARE(w.clave().size(), OpcionesClave{}.longitud);
+    }
 
     void ventana_generaAlAbrirYAlCambiar()
     {

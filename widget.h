@@ -6,6 +6,10 @@
 #include "generador.h"
 
 class QCheckBox;
+class QComboBox;
+class QStackedWidget;
+class QAbstractButton;
+namespace Dtk { namespace Widget { class DButtonBox; class DButtonBoxButton; } }
 class QLabel;
 class QPushButton;
 class QSlider;
@@ -38,8 +42,14 @@ public:
     explicit Widget(QWidget *parent = nullptr);
     ~Widget() override;
 
+    enum Modo { ModoClave = 0, ModoFrase = 1 };
+
     OpcionesClave opciones() const;
     void setOpciones(const OpcionesClave &o);
+    OpcionesFrase opcionesFrase() const;
+    void setOpcionesFrase(const OpcionesFrase &o);
+    Modo modo() const { return m_modo; }
+    void setModo(Modo m);
     QString clave() const { return m_clave; }
 
     // Segundos que la contrasena copiada permanece en el portapapeles
@@ -52,16 +62,26 @@ public slots:
 private:
     void actualizarControles();
     void actualizarFuerza();
+    void mostrar();
     void borrarPortapapeles();
 
+    Dtk::Widget::DButtonBox *m_selector;
+    Dtk::Widget::DButtonBoxButton *m_btnClave, *m_btnFrase;
+    QStackedWidget *m_paginas;
     QTextEdit *m_campo;
     BarraFuerza *m_barra;
     QLabel *m_fuerza;
+    QLabel *m_tiempo;
     QSlider *m_slider;
     QSpinBox *m_spin;
     QCheckBox *m_minusculas, *m_mayusculas, *m_numeros, *m_simbolos;
     QCheckBox *m_enie, *m_sinAmbiguos, *m_unoDeCada;
+    QSlider *m_sliderPalabras;
+    QSpinBox *m_spinPalabras;
+    QComboBox *m_separador;
+    QCheckBox *m_fraseMayusculas, *m_fraseNumero;
     QPushButton *m_generar, *m_copiar;
+    Modo m_modo = ModoClave;
 
     QString m_clave;
     QString m_copiada;  // lo que pusimos en el portapapeles (para borrarlo)

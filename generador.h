@@ -17,6 +17,14 @@ struct OpcionesClave {
     bool unoDeCada = true;      // al menos un caracter de cada tipo elegido
 };
 
+// Frase de contrasena: palabras comunes al azar (faciles de recordar y teclear)
+struct OpcionesFrase {
+    int palabras = 6;
+    QString separador = QStringLiteral("-");
+    bool mayusculas = true;  // inicial de cada palabra en mayuscula
+    bool numero = true;      // un digito al final de una palabra al azar
+};
+
 // Logica pura del generador (sin interfaz), para poder probarla.
 namespace Generador {
 
@@ -35,6 +43,19 @@ QString generar(const OpcionesClave &o, QRandomGenerator *rng = nullptr);
 // Entropia aproximada en bits: longitud * log2(tamano del juego)
 double entropia(const OpcionesClave &o);
 Fuerza fuerza(double bits);
+
+static constexpr int PALABRAS_MIN = 3;
+static constexpr int PALABRAS_MAX = 12;
+
+// Lista de palabras (recurso :/palabras.txt), cargada una sola vez
+const QStringList &listaPalabras();
+QString generarFrase(const OpcionesFrase &o, QRandomGenerator *rng = nullptr);
+// log2(tamano de la lista) por palabra, mas lo que aporte el numero
+double entropiaFrase(const OpcionesFrase &o);
+
+// Tiempo medio para adivinarla a 10 000 millones de intentos por segundo
+// (un equipo potente contra un hash rapido), en palabras: "3 siglos"
+QString tiempoDescifrado(double bits);
 
 } // namespace Generador
 
